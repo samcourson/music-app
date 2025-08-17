@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Song Instagram{% endblock %}
+
+{% block content %}
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 400px; width: 100%; text-align: center;">
+        <div style="margin-bottom: 2rem;">
+            <h1 class="logo" style="font-size: 3rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-music"></i> SongGram
+            </h1>
+            <p style="color: #999; font-size: 1.1rem;">Share your favorite songs with friends</p>
+        </div>
+
+        <form method="POST" style="text-align: left;">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" 
+                       placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" 
+                       placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1.5rem;">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </form>
+
+        <div style="text-align: center; padding-top: 1rem; border-top: 1px solid #333;">
+            <p style="color: #999; margin-bottom: 1rem;">Don't have an account?</p>
+            <a href="{{ url_for('register') }}" class="btn btn-outline">
+                <i class="fas fa-user-plus"></i> Create Account
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #2d2d2d 70%, #000000 100%);
+        background-attachment: fixed;
+    }
+
+    .card {
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 215, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+        transition: left 0.5s;
+    }
+
+    .card:hover::before {
+        left: 100%;
+    }
+
+    .form-control:focus {
+        transform: scale(1.02);
+    }
+
+    .btn {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.3s, height 0.3s;
+    }
+
+    .btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}Create Post - Song Instagram{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 2rem auto;">
+    <div class="card">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="color: #FFD700; margin-bottom: 0.5rem;">
+                <i class="fas fa-plus-circle"></i> Create New Post
+            </h2>
+            <p style="color: #999;">Share a song that moves you</p>
+        </div>
+
+        <form method="POST" id="createPostForm">
+            <!-- Song Search Section -->
+            <div class="search-section">
+                <div class="form-group">
+                    <label for="songSearch">
+                        <i class="fas fa-search" style="color: #FFD700; margin-right: 0.5rem;"></i>
+                        Search for a song
+                    </label>
+                    <div class="search-container">
+                        <input type="text" id="songSearch" class="form-control" 
+                               placeholder="Enter song name or artist..." autocomplete="off">
+                        <div class="search-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="searchResults" class="search-results" style="display: none;"></div>
+            </div>
+
+            <!-- Selected Song Display -->
+            <div id="selectedSong" class="selected-song" style="display: none;">
+                <h4 style="color: #FFD700; margin-bottom: 1rem;">
+                    <i class="fas fa-music"></i> Selected Song
+                </h4>
+                <div class="song-preview">
+                    <img id="previewImage" src="" alt="" class="preview-image">
+                    <div class="preview-info">
+                        <h3 id="previewTitle"></h3>
+                        <p id="previewArtist"></p>
+                        <p id="previewAlbum"></p>
+                    </div>
+                </div>
+                <button type="button" id="changeSong" class="btn btn-secondary" style="margin-top: 1rem;">
+                    <i class="fas fa-edit"></i> Change Song
+                </button>
+            </div>
+
+            <!-- Hidden form fields -->
+            <input type="hidden" id="song_title" name="song_title">
+            <input type="hidden" id="artist" name="artist">
+            <input type="hidden" id="album" name="album">
+            <input type="hidden" id="cover_url" name="cover_url">
+            <input type="hidden" id="spotify_url" name="spotify_url">
+            <input type="hidden" id="apple_music_url" name="apple_music_url">
+
+            <!-- Caption Section -->
+            <div class="form-group">
+                <label for="caption">
+                    <i class="fas fa-comment" style="color: #FFD700; margin-right: 0.5rem;"></i>
+                    Caption
+                </label>
+                <textarea id="caption" name="caption" class="form-control" rows="3" 
+                          placeholder="What do you think about this song? Share your thoughts..."></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span> / 280 characters
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;" disabled>
+                <i class="fas fa-share"></i> Share Post
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+.search-container {
+    position: relative;
+}
+
+.search-loading {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #FFD700;
+}
+
+.search-results {
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid #333;
+    border-radius: 12px;
+    margin-top: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+}
+
+.search-result {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-result:last-child {
+    border-bottom: none;
+}
+
+.search-result:hover {
+    background: rgba(255, 215, 0, 0.1);
+    transform: translateX(5px);
+}
+
+.search-result img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.search-result-info h4 {
+    margin: 0;
+    color: #FFD700;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.search-result-info p {
+    margin: 0.25rem 0;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.search-result-info .artist {
+    color: #999;
+}
+
+.selected-song {
+    background: rgba(255, 215, 0, 0.05);
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.song-preview {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.preview-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+.preview-info h3 {
+    margin: 0;
+    color: #FFD700;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.preview-info p {
+    margin: 0.25rem 0;
+    color: #ccc;
+}
+
+.char-count {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #999;
+    margin-top: 0.5rem;
+}
+
+.char-count.warning {
+    color: #FFA500;
+}
+
+.char-count.danger {
+    color: #dc3545;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+#submitBtn:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+}
+
+#submitBtn:disabled:hover {
+    background: #333;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .song-preview {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .preview-image {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .search-result {
+        padding: 0.75rem;
+    }
+    
+    .search-result img {
+        width: 50px;
+        height: 50px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const songSearch = document.getElementById('songSearch');
+    const searchResults = document.getElementById('searchResults');
+    const searchLoading = document.querySelector('.search-loading');
+    const selectedSong = document.getElementById('selectedSong');
+    const changeSongBtn = document.getElementById('changeSong');
+    const submitBtn = document.getElementById('submitBtn');
+    const captionTextarea = document.getElementById('caption');
+    const charCount = document.getElementById('charCount');
+    const form = document.getElementById('createPostForm');
+
+    let searchTimeout;
+
+    // Song search functionality
+    songSearch.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            searchSongs(query);
+        }, 500);
+    });
+
+    async function searchSongs(query) {
+        searchLoading.style.display = 'block';
+        
+        try {
+            const response = await fetch(`/api/search_songs?query=${encodeURIComponent(query)}`);
+            const songs = await response.json();
+            
+            displaySearchResults(songs);
+        } catch (error) {
+            console.error('Search error:', error);
+            searchResults.innerHTML = '<div style="padding: 1rem; color: #dc3545; text-align: center;">Search failed. Please try again.</div>';
+            searchResults.style.display = 'block';
+        } finally {
+            searchLoading.style.display = 'none';
+        }
+    }
+
+    function displaySearchResults(songs) {
+        if (songs.length === 0) {
+            searchResults.innerHTML = '<div style="padding: 1rem; color: #999; text-align: center;">No songs found. Try different keywords.</div>';
+            searchResults.style.display = 'block';
+            return;
+        }
+
+        const resultsHtml = songs.map(song => `
+            <div class="search-result" data-song='${JSON.stringify(song)}'>
+                <img src="${song.image}" alt="${song.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"60\" height=\"60\" viewBox=\"0 0 24 24\"><rect fill=\"%23333\" width=\"24\" height=\"24\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" dy=\".3em\" fill=\"%23999\">♪</text></svg>'">
+                <div class="search-result-info">
+                    <h4>${song.name}</h4>
+                    <p class="artist">by ${song.artist}</p>
+                    <p>${song.album}</p>
+                </div>
+            </div>
+        `).join('');
+
+        searchResults.innerHTML = resultsHtml;
+        searchResults.style.display = 'block';
+
+        // Add click handlers to search results
+        searchResults.querySelectorAll('.search-result').forEach(result => {
+            result.addEventListener('click', function() {
+                const songData = JSON.parse(this.dataset.song);
+                selectSong(songData);
+            });
+        });
+    }
+
+    function selectSong(song) {
+        // Hide search results and show selected song
+        searchResults.style.display = 'none';
+        selectedSong.style.display = 'block';
+        songSearch.style.display = 'none';
+
+        // Update preview
+        document.getElementById('previewImage').src = song.image;
+        document.getElementById('previewTitle').textContent = song.name;
+        document.getElementById('previewArtist').textContent = `by ${song.artist}`;
+        document.getElementById('previewAlbum').textContent = song.album;
+
+        // Update hidden form fields
+        document.getElementById('song_title').value = song.name;
+        document.getElementById('artist').value = song.artist;
+        document.getElementById('album').value = song.album;
+        document.getElementById('cover_url').value = song.image;
+        document.getElementById('spotify_url').value = song.spotify_url || `https://open.spotify.com/search/${encodeURIComponent(song.name + ' ' + song.artist)}`;
+        document.getElementById('apple_music_url').value = song.apple_music_url || `https://music.apple.com/search?term=${encodeURIComponent(song.name + ' ' + song.artist)}`;
+
+        updateSubmitButton();
+    }
+
+    // Change song functionality
+    changeSongBtn.addEventListener('click', function() {
+        selectedSong.style.display = 'none';
+        songSearch.style.display = 'block';
+        songSearch.value = '';
+        songSearch.focus();
+        
+        // Clear hidden fields
+        document.querySelectorAll('input[type="hidden"]').forEach(input => {
+            input.value = '';
+        });
+        
+        updateSubmitButton();
+    });
+
+    // Caption character counter
+    captionTextarea.addEventListener('input', function() {
+        const length = this.value.length;
+        const maxLength = 280;
+        
+        charCount.textContent = length;
+        
+        if (length > maxLength * 0.9) {
+            charCount.parentElement.classList.add('danger');
+            charCount.parentElement.classList.remove('warning');
+        } else if (length > maxLength * 0.7) {
+            charCount.parentElement.classList.add('warning');
+            charCount.parentElement.classList.remove('danger');
+        } else {
+            charCount.parentElement.classList.remove('warning', 'danger');
+        }
+
+        if (length > maxLength) {
+            this.value = this.value.substring(0, maxLength);
+            charCount.textContent = maxLength;
+        }
+    });
+
+    function updateSubmitButton() {
+        const hasSong = document.getElementById('song_title').value;
+        submitBtn.disabled = !hasSong;
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        if (!document.getElementById('song_title').value) {
+            e.preventDefault();
+            alert('Please select a song first!');
+            return;
+        }
+
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Post...';
+        submitBtn.disabled = true;
+    });
+
+    // Close search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-section')) {
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // Focus on search input when page loads
+    songSearch.focus();
+});
+</script>
+{% endblock %}

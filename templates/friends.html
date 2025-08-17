@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+
+{% block title %}Friends - Song Instagram{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 2rem auto;">
+    <div class="friends-container">
+        <!-- Friend Requests Section -->
+        <div class="card">
+            <div class="section-header">
+                <h2><i class="fas fa-user-plus"></i> Friend Requests</h2>
+                <span class="request-count">{{ friend_requests|length }}</span>
+            </div>
+            
+            {% if friend_requests %}
+                <div class="requests-list">
+                    {% for request in friend_requests %}
+                    <div class="friend-request-item" data-request-id="{{ request[0] }}">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-details">
+                                <h4>@{{ request[1] }}</h4>
+                                <p>wants to be your friend</p>
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn btn-primary accept-btn" data-user-id="{{ request[0] }}">
+                                <i class="fas fa-check"></i> Accept
+                            </button>
+                            <button class="btn btn-secondary decline-btn" data-user-id="{{ request[0] }}">
+                                <i class="fas fa-times"></i> Decline
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox" style="font-size: 3rem; color: #666; margin-bottom: 1rem;"></i>
+                    <p>No pending friend requests</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Find Friends Section -->
+        <div class="card">
+            <div class="section-header">
+                <h2><i class="fas fa-search"></i> Find Friends</h2>
+            </div>
+            
+            <div class="search-section">
+                <div class="form-group">
+                    <div class="search-container">
+                        <input type="text" id="userSearch" class="form-control" 
+                               placeholder="Search for users by username..." autocomplete="off">
+                        <div class="search-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="userSearchResults" class="search-results" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- My Friends Section -->
+        <div class="card">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i> My Friends</h2>
+                <button class="btn btn-outline refresh-friends-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            
+            <div id="friendsList" class="friends-list">
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i> Loading friends...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.friends-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #333;
+}
+
+.section-header h2 {
+    color: #FFD700;
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.request-count {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #000;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.requests-list, .friends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.friend-request-item, .friend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #333;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.friend-request-item:hover, .friend-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.1);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.user-details h4 {
+    margin: 0;
+    color: #FFD700;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.user-details p {
+    margin: 0.25rem 0 0 0;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.request-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.request-actions .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-loading {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #FFD700;
+}
+
+.search-results {
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid #333;
+    border-radius: 12px;
+    margin-top: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+}
+
+.search-result {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-result:last-child {
+    border-bottom: none;
+}
+
+.search-result:hover {
+    background: rgba(255, 215, 0, 0.1);
+    transform: translateX(5px);
+}
+
+.search-result .user-info {
+    flex: 1;
+}
+
+.search-result .user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+}
+
+.add-friend-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.empty-state, .loading-state {
+    text-align: center;
+    padding: 3rem;
+    color: #999;
+}
+
+.empty-state i, .loading-state i {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.friend-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.friend-status.online {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid #28a745;
+}
+
+.friend-status.offline {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid #6c757d;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.message-btn {
+    background: none;
+    border: 1px solid #FFD700;
+    color: #FFD700;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.message-btn:hover {
+    background: #FFD700;
+    color: #000;
+    transform: scale(1.1);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .friend-request-item, .friend-item {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .request-actions, .friend-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .search-result {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .search-result .user-info {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const userSearch = document.getElementById('userSearch');
+    const userSearchResults = document.getElementById('userSearchResults');
+    const searchLoading = document.querySelector('.search-loading');
+    const refreshFriendsBtn = document.querySelector('.refresh-friends-btn');
+    const friendsList = document.getElementById('friendsList');
+
+    let searchTimeout;
+
+    // User search functionality
+    userSearch.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+            userSearchResults.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            searchUsers(query);
+        }, 500);
+    });
+
+    async function searchUsers(query) {
+        searchLoading.style.display = 'block';
+        
+        try {
+            const response = await fetch(`/api/search_users?query=${encodeURIComponent(query)}`);
+            const users = await response.json();
+            
+            displayUserResults(users);
+        } catch (error) {
+            console.error('User search error:', error);
+            userSearchResults.innerHTML = '<div style="padding: 1rem; color: #dc3545; text-align: center;">Search failed. Please try again.</div>';
+            userSearchResults.style.display = 'block';
+        } finally {
+            searchLoading.style.display = 'none';
+        }
+    }
+
+    function displayUserResults(users) {
+        if (users.length === 0) {
+            userSearchResults.innerHTML = '<div style="padding: 1rem; color: #999; text-align: center;">No users found. Try different keywords.</div>';
+            userSearchResults.style.display = 'block';
+            return;
+        }
+
+        const resultsHtml = users.map(user => `
+            <div class="search-result">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <h4>@${user.username}</h4>
+                        <p>User ID: ${user.id}</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary add-friend-btn" data-user-id="${user.id}">
+                    <i class="fas fa-user-plus"></i> Add Friend
+                </button>
+            </div>
+        `).join('');
+
+        userSearchResults.innerHTML = resultsHtml;
+        userSearchResults.style.display = 'block';
+
+        // Add click handlers to add friend buttons
+        userSearchResults.querySelectorAll('.add-friend-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                sendFriendRequest(userId, this);
+            });
+        });
+    }
+
+    async function sendFriendRequest(userId, button) {
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        button.disabled = true;
+
+        try {
+            const response = await fetch(`/api/send_friend_request/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                button.innerHTML = '<i class="fas fa-check"></i> Sent!';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-secondary');
+                setTimeout(() => {
+                    button.parentElement.parentElement.style.opacity = '0.5';
+                }, 1000);
+            } else {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                alert(result.message || 'Failed to send friend request');
+            }
+        } catch (error) {
+            console.error('Error sending friend request:', error);
+            button.innerHTML = originalText;
+            button.disabled = false;
+            alert('Failed to send friend request. Please try again.');
+        }
+    }
+
+    // Accept/Decline friend requests
+    document.querySelectorAll('.accept-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            handleFriendRequest(this.dataset.userId, 'accept', this);
+        });
+    });
+
+    document.querySelectorAll('.decline-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            handleFriendRequest(this.dataset.userId, 'decline', this);
+        });
+    });
+
+    async function handleFriendRequest(userId, action, button) {
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.disabled = true;
+
+        try {
+            const response = await fetch(`/api/handle_friend_request/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: action })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Remove the request item from the DOM
+                button.closest('.friend-request-item').style.opacity = '0';
+                setTimeout(() => {
+                    button.closest('.friend-request-item').remove();
+                    updateRequestCount();
+                }, 300);
+            } else {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                alert(result.message || `Failed to ${action} friend request`);
+            }
+        } catch (error) {
+            console.error(`Error ${action}ing friend request:`, error);
+            button.innerHTML = originalText;
+            button.disabled = false;
+            alert(`Failed to ${action} friend request. Please try again.`);
+        }
+    }
+
+    function updateRequestCount() {
+        const requestCount = document.querySelector('.request-count');
+        const currentCount = parseInt(requestCount.textContent);
+        requestCount.textContent = Math.max(0, currentCount - 1);
+    }
+
+    // Load friends list
+    async function loadFriends() {
+        friendsList.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading friends...</div>';
+
+        try {
+            // This would need to be implemented in your backend
+            const response = await fetch('/api/get_friends');
+            const friends = await response.json();
+
+            if (friends.length === 0) {
+                friendsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-friends" style="font-size: 3rem; color: #666; margin-bottom: 1rem;"></i>
+                        <p>No friends yet. Start by adding some friends!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const friendsHtml = friends.map(friend => `
+                <div class="friend-item">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <h4>@${friend.username}</h4>
+                            <p>Friends since ${friend.friend_since || 'recently'}</p>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <span class="friend-status ${friend.online ? 'online' : 'offline'}">
+                            ${friend.online ? 'Online' : 'Offline'}
+                        </span>
+                        <button class="message-btn" title="Send message">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            friendsList.innerHTML = friendsHtml;
+
+        } catch (error) {
+            console.error('Error loading friends:', error);
+            friendsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #dc3545; margin-bottom: 1rem;"></i>
+                    <p>Failed to load friends. Please try again.</p>
+                </div>
+            `;
+        }
+    }
+
+    // Refresh friends button
+    refreshFriendsBtn.addEventListener('click', loadFriends);
+
+    // Close search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-section')) {
+            userSearchResults.style.display = 'none';
+        }
+    });
+
+    // Load friends on page load
+    loadFriends();
+});
+</script>
+{% endblock %}

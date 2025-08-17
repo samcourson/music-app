@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+
+{% block title %}Feed - Song Instagram{% endblock %}
+
+{% block content %}
+<div style="max-width: 614px; margin: 2rem auto;">
+    {% if not posts %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <i class="fas fa-music" style="font-size: 4rem; color: #FFD700; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <h2 style="color: #FFD700; margin-bottom: 1rem;">No posts yet!</h2>
+        <p style="color: #999; margin-bottom: 2rem;">Start following friends or create your first post to see content here.</p>
+        <a href="{{ url_for('create_post') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Your First Post
+        </a>
+    </div>
+    {% else %}
+    {% for post in posts %}
+    <div class="post-card" data-post-id="{{ post[0] }}">
+        <!-- Post Header -->
+        <div class="post-header">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <h4>@{{ post[9] }}</h4>
+                    <p class="post-time">{{ post[8] }}</p>
+                </div>
+            </div>
+            <div class="post-menu">
+                <i class="fas fa-ellipsis-h"></i>
+            </div>
+        </div>
+
+        <!-- Album Cover -->
+        <div class="post-image">
+            <img src="{{ post[4] }}" alt="{{ post[1] }} - {{ post[2] }}" loading="lazy">
+        </div>
+
+        <!-- Post Actions -->
+        <div class="post-actions">
+            <div class="action-buttons">
+                <button class="like-btn {% if post[11] %}liked{% endif %}" data-post-id="{{ post[0] }}">
+                    <i class="{% if post[11] %}fas{% else %}far{% endif %} fa-heart"></i>
+                </button>
+                <button class="comment-btn" data-post-id="{{ post[0] }}">
+                    <i class="far fa-comment"></i>
+                </button>
+                <a href="{{ post[5] }}" target="_blank" class="spotify-btn">
+                    <i class="fab fa-spotify"></i>
+                </a>
+                <a href="{{ post[6] }}" target="_blank" class="apple-btn">
+                    <i class="fab fa-apple"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Like Count -->
+        <div class="like-count">
+            <strong class="likes-number">{{ post[10] }}</strong> likes
+        </div>
+
+        <!-- Song Info & Caption -->
+        <div class="post-content">
+            <div class="song-info">
+                <strong>{{ post[1] }}</strong> by {{ post[2] }}
+                <div class="album-name">{{ post[3] }}</div>
+            </div>
+            {% if post[7] %}
+            <div class="caption">
+                <strong>@{{ post[9] }}</strong> {{ post[7] }}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <button class="view-comments-btn" data-post-id="{{ post[0] }}">
+                View comments
+            </button>
+            <div class="comments-container" id="comments-{{ post[0] }}" style="display: none;">
+                <!-- Comments will be loaded here -->
+            </div>
+            
+            <!-- Add Comment Form -->
+            <form class="comment-form" data-post-id="{{ post[0] }}">
+                <input type="text" placeholder="Add a comment..." class="comment-input">
+                <button type="submit" class="comment-submit">Post</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<style>
+.post-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #333;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+.post-header .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 1.2rem;
+}
+
+.post-header h4 {
+    margin: 0;
+    color: #FFD700;
+    font-weight: 600;
+}
+
+.post-time {
+    margin: 0;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.post-menu {
+    color: #999;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+}
+
+.post-menu:hover {
+    color: #FFD700;
+}
+
+.post-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+}
+
+.post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.post-actions {
+    padding: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.action-buttons button, .action-buttons a {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+
+.action-buttons button:hover, .action-buttons a:hover {
+    transform: scale(1.2);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.like-btn.liked {
+    color: #e74c3c;
+    animation: heartBeat 0.6s ease;
+}
+
+.spotify-btn:hover {
+    color: #1DB954;
+}
+
+.apple-btn:hover {
+    color: #FA243C;
+}
+
+.comment-btn:hover {
+    color: #FFD700;
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.like-count {
+    padding: 0 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.likes-number {
+    color: #FFD700;
+}
+
+.post-content {
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+}
+
+.song-info {
+    margin-bottom: 0.5rem;
+}
+
+.song-info strong {
+    color: #FFD700;
+    font-size: 1.1rem;
+}
+
+.album-name {
+    color: #999;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.caption {
+    color: #fff;
+    line-height: 1.5;
+}
+
+.comments-section {
+    border-top: 1px solid #333;
+    padding: 1rem;
+}
+
+.view-comments-btn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    transition: color 0.3s ease;
+}
+
+.view-comments-btn:hover {
+    color: #FFD700;
+}
+
+.comments-container {
+    margin-bottom: 1rem;
+}
+
+.comment {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.comment-user {
+    font-weight: 600;
+    color: #FFD700;
+    margin-right: 0.5rem;
+}
+
+.comment-text {
+    color: #fff;
+}
+
+.comment-time {
+    color: #999;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.comment-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.comment-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: #FFD700;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.comment-submit {
+    background: none;
+    border: none;
+    color: #FFD700;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.comment-submit:hover {
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.comment-submit:disabled {
+    color: #666;
+    cursor: not-allowed;
+}
+
+/* Loading states */
+.loading-comments {
+    text-align: center;
+    color: #999;
+    padding: 1rem;
+}
+
+.loading-comments i {
+    animation: spin 1s linear infinite;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .post-card {
+        margin: 0 -1rem 2rem -1rem;
+        border-radius: 0;
+    }
+    
+    .action-buttons {
+        gap: 0.75rem;
+    }
+    
+    .action-buttons button, .action-buttons a {
+        font-size: 1.3rem;
+        padding: 0.3rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like button functionality
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const postId = this.dataset.postId;
+            const icon = this.querySelector('i');
+            const likesNumber = this.closest('.post-card').querySelector('.likes-number');
+            
+            try {
+                const response = await fetch(`/api/like_post/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Toggle like state
+                    if (this.classList.contains('liked')) {
+                        this.classList.remove('liked');
+                        icon.className = 'far fa-heart';
+                        likesNumber.textContent = parseInt(likesNumber.textContent) - 1;
+                    } else {
+                        this.classList.add('liked');
+                        icon.className = 'fas fa-heart';
+                        likesNumber.textContent = parseInt(likesNumber.textContent) + 1;
+                    }
+                }
+            } catch (error) {
+                console.error('Error liking post:', error);
+            }
+        });
+    });
+
+    // Comment form functionality
+    document.querySelectorAll('.comment-form').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const postId = this.dataset.postId;
+            const input = this.querySelector('.comment-input');
+            const submitBtn = this.querySelector('.comment-submit');
+            const commentText = input.value.trim();
+            
+            if (!commentText) return;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting...';
+            
+            try {
+                const response = await fetch(`/api/add_comment/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ comment: commentText })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    input.value = '';
+                    // Refresh comments if they're currently visible
+                    const commentsContainer = document.getElementById(`comments-${postId}`);
+                    if (commentsContainer.style.display !== 'none') {
+                        loadComments(postId);
+                    }
+                }
+            } catch (error) {
+                console.error('Error adding comment:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Post';
+            }
+        });
+    });
+
+    // View comments functionality
+    document.querySelectorAll('.view-comments-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const commentsContainer = document.getElementById(`comments-${postId}`);
+            
+            if (commentsContainer.style.display === 'none') {
+                commentsContainer.style.display = 'block';
+                this.textContent = 'Hide comments';
+                loadComments(postId);
+            } else {
+                commentsContainer.style.display = 'none';
+                this.textContent = 'View comments';
+            }
+        });
+    });
+
+    async function loadComments(postId) {
+        const container = document.getElementById(`comments-${postId}`);
+        container.innerHTML = '<div class="loading-comments"><i class="fas fa-spinner"></i> Loading comments...</div>';
+        
+        try {
+            const response = await fetch(`/api/get_comments/${postId}`);
+            const comments = await response.json();
+            
+            if (comments.length === 0) {
+                container.innerHTML = '<div style="color: #999; text-align: center; padding: 1rem;">No comments yet. Be the first to comment!</div>';
+                return;
+            }
+            
+            container.innerHTML = comments.map(comment => `
+                <div class="comment">
+                    <span class="comment-user">@${comment.username}</span>
+                    <span class="comment-text">${comment.comment}</span>
+                    <div class="comment-time">${comment.created_at}</div>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error('Error loading comments:', error);
+            container.innerHTML = '<div style="color: #dc3545; text-align: center; padding: 1rem;">Failed to load comments</div>';
+        }
+    }
+
+    // Auto-resize comment inputs
+    document.querySelectorAll('.comment-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const submitBtn = this.parentElement.querySelector('.comment-submit');
+            submitBtn.style.color = this.value.trim() ? '#FFD700' : '#666';
+        });
+    });
+});
+</script>
+{% endblock %}
